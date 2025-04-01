@@ -7,6 +7,7 @@ import {
 } from '@nestjs/swagger';
 import { ConfigService } from '@nestjs/config';
 import { ValidationPipe } from '@nestjs/common';
+import * as cookieParser from 'cookie-parser';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
@@ -20,7 +21,6 @@ async function bootstrap() {
     .setTitle('Auth Service')
     .setDescription('The Auth Service API description')
     .setVersion('1.0')
-    .addTag('auth')
     .build();
   const options: SwaggerDocumentOptions = {
     operationIdFactory: (controllerKey: string, methodKey: string) => methodKey,
@@ -29,7 +29,8 @@ async function bootstrap() {
     SwaggerModule.createDocument(app, config, options);
   SwaggerModule.setup('/swagger/api', app, documentFactory);
   app.useGlobalPipes(new ValidationPipe());
-  console.log('server start on: ', configService.get('PORT'));
+  app.use(cookieParser());
   await app.listen(process.env.PORT ?? 3000);
+  console.log('server start on: ', configService.get('PORT'));
 }
 bootstrap();

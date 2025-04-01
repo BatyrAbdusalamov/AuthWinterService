@@ -45,8 +45,7 @@ module.exports = {
         type: Sequelize.INTEGER
       },
       updated_password: {
-        allowNull: false,
-        type: Sequelize.DATE
+        type: Sequelize.STRING
       },
       createdAt: {
         allowNull: false,

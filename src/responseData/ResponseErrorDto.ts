@@ -12,6 +12,7 @@ export class ResponseErrorDto {
   @ApiProperty({
     description: 'Error status codes',
     example: '200+ or 300+',
+    type: 'number',
   })
   status: number;
   @IsString()
@@ -19,6 +20,7 @@ export class ResponseErrorDto {
   @ApiProperty({
     description: 'Error text',
     example: 'Error request client',
+    type: 'string',
   })
   description: string;
 }

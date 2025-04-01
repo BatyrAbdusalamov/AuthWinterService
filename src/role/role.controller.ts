@@ -1,5 +1,5 @@
 import { Body, Controller, Get, Param, Post, Res } from '@nestjs/common';
-import { ApiBody, ApiParam, ApiResponse } from '@nestjs/swagger';
+import { ApiBody, ApiParam, ApiResponse, ApiTags } from '@nestjs/swagger';
 import {
   getErrorResponse,
   ResponseErrorDto,
@@ -9,6 +9,7 @@ import { RoleDto } from 'src/responseData/RoleDto';
 import { Response } from 'express';
 
 @Controller('role')
+@ApiTags('Role')
 export class RoleController {
   constructor(private roleService: RoleService) {}
 

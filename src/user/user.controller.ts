@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Param, Post, Res } from '@nestjs/common';
+import { Body, Controller, Get, Param, Patch, Post, Res } from '@nestjs/common';
 import { UserService } from './user.service';
 import { ApiBody, ApiParam, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { UserDto } from '../responseData/UserDto';
@@ -28,7 +28,7 @@ interface SearchUserDataParams {
 }
 
 @Controller('user')
-@ApiTags('user')
+@ApiTags('User')
 export class UserController {
   constructor(private readonly userService: UserService) {}
   @Get('info/:guid')
@@ -81,7 +81,7 @@ export class UserController {
     }
   }
 
-  @Post('info')
+  @Patch('info')
   @ApiBody({
     required: true,
     description: 'Данные для поиска пользователей(Все поля опциональные)',

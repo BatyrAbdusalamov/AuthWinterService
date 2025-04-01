@@ -1,14 +1,7 @@
 import { ApiProperty } from '@nestjs/swagger';
-import {
-  IsNotEmpty,
-  IsNumber,
-  IsString,
-  Matches,
-  MinLength,
-} from 'class-validator';
 import { v5 as uuidv5 } from 'uuid';
 
-interface CreatingUserData extends UserDto {
+interface CreatingUserData {
   login: string;
   first_name: string;
   last_name: string;
@@ -17,6 +10,9 @@ interface CreatingUserData extends UserDto {
   password: string;
   photo?: string;
 }
+
+const DEFAULT_USER_ICON_PHOTO =
+  'https://avatars.mds.yandex.net/i?id=60f336ebdb8134776558e8638b81d111_sr-5538185-images-thumbs&n=13';
 
 const UUIDV5_NAMESPACE = 'ccd3616d-c275-4a9f-909d-48ea6d441172';
 
@@ -57,94 +53,177 @@ function GenerateGuid({ login, email }: CreatingUserData) {
 }
 
 export class UserDto {
-  constructor(
-    userData: CreatingUserData,
-    hashedPassword: (pass: string) => string,
-  ) {
+  constructor(userData: CreatingUserData, hashedPassword: () => string) {
     ValidateCreatingUserDto(userData);
     this.email = userData.email;
     this.login = userData.login;
     this.phone = userData.phone;
     this.first_name = userData.first_name;
     this.last_name = userData.last_name;
-    this.password = hashedPassword(userData.password);
+    this.password = hashedPassword();
     this.photo = userData.photo ?? '';
     this.guid = GenerateGuid(userData);
     this.role = 1;
-    this.updated_password = Date.now();
+    this.updated_password = String(Date.now());
   }
 
   @ApiProperty({
     description: 'Уникальный идентификатор пользователя',
     example: '123e4567-e89b-12d3-a456-426614174000',
+    type: 'string',
   })
-  @IsString()
-  @IsNotEmpty()
   guid: string;
 
   @ApiProperty({
     description: 'Логин пользователя (минимум 4 символа).',
     example: 'johndoe',
+    type: 'string',
+    minLength: 4,
   })
-  @IsString()
-  @IsNotEmpty()
-  @MinLength(4)
   login: string;
 
   @ApiProperty({
     description: 'Имя пользователя',
     example: 'John',
+    type: 'string',
   })
-  @IsString()
-  @IsNotEmpty()
   first_name: string;
 
   @ApiProperty({
     description: 'Фамилия пользователя',
     example: 'Doe',
+    type: 'string',
   })
-  @IsString()
-  @IsNotEmpty()
   last_name: string;
 
   @ApiProperty({
     description: 'Email пользователя',
     example: 'john.doe@example.com',
+    type: 'string',
   })
-  @IsString()
-  @IsNotEmpty()
   email: string;
 
   @ApiProperty({
     description: 'Номер телефона пользователя в международном формате',
     example: '+123123123123',
+    type: 'string',
   })
-  @IsString()
-  @IsNotEmpty()
-  @Matches(/^\+[0-9]\d{1,14}$/)
   phone: string;
 
   @ApiProperty({
     description: 'Пароль пользователя (минимум 7 символов)',
     example: 'password123',
+    type: 'string',
     minLength: 7,
   })
-  @IsString()
-  @IsNotEmpty()
-  @MinLength(7)
   password: string;
 
   @ApiProperty({
     description: 'URL фотографии пользователя',
     example: 'https://example.com/photos/user.jpg',
+    type: 'string',
+    required: false,
   })
-  @IsString()
-  @IsNotEmpty()
   photo?: string;
 
-  @IsNumber()
-  @IsNotEmpty()
+  @ApiProperty({
+    description: 'Id роли',
+    example: '1',
+    type: 'number',
+  })
   role: number;
 
-  updated_password?: number;
+  @ApiProperty({
+    description: 'Дата последнего обновления пароля',
+    example: '01.01.1970',
+    type: 'string',
+  })
+  updated_password?: string;
+}
+
+export class UserResponseDto {
+  constructor(userData: UserDto) {
+    this.email = userData.email;
+    this.login = userData.login;
+    this.phone = userData.phone;
+    this.first_name = userData.first_name;
+    this.last_name = userData.last_name;
+    this.photo = userData.photo ?? DEFAULT_USER_ICON_PHOTO;
+    this.guid = userData.guid;
+    this.role = userData.role;
+    this.updated_password = userData.updated_password;
+  }
+
+  @ApiProperty({
+    description: 'Уникальный идентификатор пользователя',
+    example: '123e4567-e89b-12d3-a456-426614174000',
+    type: 'string',
+  })
+  guid: string;
+
+  @ApiProperty({
+    description: 'Логин пользователя (минимум 4 символа).',
+    example: 'johndoe',
+    type: 'string',
+    minLength: 4,
+  })
+  login: string;
+
+  @ApiProperty({
+    description: 'Имя пользователя',
+    example: 'John',
+    type: 'string',
+  })
+  first_name: string;
+
+  @ApiProperty({
+    description: 'Фамилия пользователя',
+    example: 'Doe',
+    type: 'string',
+  })
+  last_name: string;
+
+  @ApiProperty({
+    description: 'Email пользователя',
+    example: 'john.doe@example.com',
+    type: 'string',
+  })
+  email: string;
+
+  @ApiProperty({
+    description: 'Номер телефона пользователя в международном формате',
+    example: '+123123123123',
+    type: 'string',
+  })
+  phone: string;
+
+  @ApiProperty({
+    description: 'Пароль пользователя (минимум 7 символов)',
+    example: 'password123',
+    type: 'string',
+    minLength: 7,
+  })
+  password: string;
+
+  @ApiProperty({
+    description: 'URL фотографии пользователя',
+    example: 'https://example.com/photos/user.jpg',
+    type: 'string',
+    required: false,
+  })
+  photo?: string;
+
+  @ApiProperty({
+    description: 'Id роли',
+    example: '1',
+    type: 'number',
+  })
+  role: number;
+
+  @ApiProperty({
+    description: 'Дата последнего обновления пароля',
+    example: '01.01.1970',
+    type: 'string',
+  })
+  updated_password?: string;
 }

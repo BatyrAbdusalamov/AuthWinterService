@@ -9,26 +9,26 @@ export class Users extends Model<Users, UserDto> {
     allowNull: false,
     unique: true,
   })
-  guid!: string;
+  guid: string;
 
   @Column({
     type: DataTypes.STRING,
     allowNull: false,
     unique: true,
   })
-  login!: string;
+  login: string;
 
   @Column({
     type: DataTypes.STRING,
     allowNull: false,
   })
-  first_name!: string;
+  first_name: string;
 
   @Column({
     type: DataTypes.STRING,
     allowNull: false,
   })
-  last_name!: string;
+  last_name: string;
 
   @Column({
     type: DataTypes.STRING,
@@ -38,35 +38,34 @@ export class Users extends Model<Users, UserDto> {
       isEmail: true,
     },
   })
-  email!: string;
+  email: string;
 
   @Column({
     type: DataTypes.STRING,
     allowNull: false,
   })
-  phone!: string;
+  phone: string;
 
   @Column({
     type: DataTypes.STRING,
     allowNull: false,
   })
-  password!: string;
+  password: string;
 
   @Column({
     type: DataTypes.STRING,
     allowNull: false,
   })
-  photo!: string;
+  photo: string;
 
   @Column({
     type: DataTypes.NUMBER,
     allowNull: false,
   })
-  role!: number;
+  role: number;
 
   @Column({
-    type: DataTypes.NUMBER,
-    allowNull: false,
+    type: DataTypes.STRING,
   })
-  updated_password!: number;
+  updated_password: string;
 }

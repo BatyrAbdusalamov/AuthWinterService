@@ -40,6 +40,7 @@ export class RoleDto {
     description: 'Имя роли',
     example: 'SuperUser',
     minLength: 4,
+    type: 'string',
   })
   @IsString()
   @IsNotEmpty()
@@ -51,6 +52,8 @@ export class RoleDto {
     description: 'Теги для роли',
     example: '["tag","tag2"]',
     minLength: 1,
+    isArray: true,
+    type: 'string',
   })
   @IsArray()
   @IsNotEmpty()
