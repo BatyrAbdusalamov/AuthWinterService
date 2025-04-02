@@ -5,7 +5,7 @@ import { maxAgeAccessSec, maxAgeRefreshSec } from 'src/constant/cookieConst';
 import { EnvConst } from 'src/constant/envConst';
 import { AuthLoginDto, AuthRegDto } from 'src/requestData/AuthDto';
 import { UserDto, UserResponseDto } from 'src/responseData/UserDto';
-import { UserService } from 'src/user/user.service';
+import { UserService } from 'src/modules/user/user.service';
 
 interface JwtPayLoad {
   guid: string;
@@ -75,16 +75,18 @@ export class AuthService {
   ): Promise<boolean> {
     const tokenPayload: JwtPayLoad = await this.jwtService.decode(accessToken);
     if (
-      Number(tokenPayload.dateStart + tokenPayload.expiriesIn) > Date.now() ||
+      Number(tokenPayload.expiriesIn) < Date.now() ||
       tokenPayload.fingerprint !== fingerprint
     ) {
-      throw new Error('Invalid access-token');
+      return false;
     }
 
-    const validAccessToken = await this.jwtService.signAsync(tokenPayload);
+    const validAccessToken = await this.jwtService.signAsync(tokenPayload, {
+      secret: this.configService.get<string>(EnvConst[0]),
+    });
 
     if (accessToken !== validAccessToken) {
-      throw new Error('Invalid access-token');
+      return false;
     }
 
     return true;

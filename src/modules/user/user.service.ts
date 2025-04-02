@@ -1,6 +1,6 @@
-import { Injectable } from '@nestjs/common';
+import { HttpException, Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/sequelize';
-import { Users as UserModel } from '../../models/users';
+import { Users as UserModel } from '../../../models/users';
 import { UserDto } from 'src/responseData/UserDto';
 import * as bcrypt from 'bcrypt';
 import { Op } from 'sequelize';
@@ -32,14 +32,14 @@ export class UserService {
       where: { ...userSearchData },
     });
     if (!userData?.password) {
-      throw new Error('Пользователь не найден');
+      throw new HttpException('Пользователь не найден', 400);
     }
     const isPasswordMatching = await bcrypt.compare(
       plainTextPassword,
       userData.password,
     );
     if (!isPasswordMatching) {
-      throw new Error('Пароль не действительный');
+      throw new HttpException('Пароль не действительный', 400);
     }
 
     return userData;
@@ -81,7 +81,7 @@ export class UserService {
         ],
       });
     } else {
-      throw new Error('Отсутствую данные для поиска');
+      throw new HttpException('Отсутствуют данные для поиска', 400);
     }
   }
 
@@ -108,8 +108,11 @@ export class UserService {
       if (isUser.email === userRegData.email) {
         errParamsMessage.push('Email');
       }
-      throw new Error(
-        `Пользователь с таким ${errParamsMessage.length > 1 ? errParamsMessage.join(' и ') : errParamsMessage[0]} уже существует.`,
+      throw new HttpException(
+        errParamsMessage.length
+          ? `Пользователь с таким ${errParamsMessage.length > 1 ? errParamsMessage.join(' и ') : errParamsMessage[0]} уже существует.`
+          : 'Пользователь уже существует.',
+        400,
       );
     }
     const hashPassword = await this.hashedPassword(userRegData.password); //Может быть ошибка хеширования bcrypt, обязательно нужно обработать выше

@@ -1,12 +1,28 @@
-import { Body, Controller, Get, Param, Patch, Post, Res } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Get,
+  Param,
+  Patch,
+  Post,
+  Res,
+  UseGuards,
+} from '@nestjs/common';
 import { UserService } from './user.service';
-import { ApiBody, ApiParam, ApiResponse, ApiTags } from '@nestjs/swagger';
-import { UserDto } from '../responseData/UserDto';
+import {
+  ApiBody,
+  ApiCookieAuth,
+  ApiParam,
+  ApiResponse,
+  ApiTags,
+} from '@nestjs/swagger';
+import { UserDto } from '../../responseData/UserDto';
 import {
   getErrorResponse,
   ResponseErrorDto,
 } from 'src/responseData/ResponseErrorDto';
 import { Response } from 'express';
+import { AuthGuard } from 'src/guard/auth.guard';
 
 interface CreatingUserData extends UserDto {
   login: string;
@@ -31,7 +47,10 @@ interface SearchUserDataParams {
 @ApiTags('User')
 export class UserController {
   constructor(private readonly userService: UserService) {}
+
+  @UseGuards(AuthGuard)
   @Get('info/:guid')
+  @ApiCookieAuth('access-token')
   @ApiParam({
     name: 'guid',
     required: true,
@@ -81,7 +100,9 @@ export class UserController {
     }
   }
 
+  @UseGuards(AuthGuard)
   @Patch('info')
+  @ApiCookieAuth('access-token')
   @ApiBody({
     required: true,
     description: 'Данные для поиска пользователей(Все поля опциональные)',
@@ -125,7 +146,9 @@ export class UserController {
     }
   }
 
+  @UseGuards(AuthGuard)
   @Post('create')
+  @ApiCookieAuth('access-token')
   @ApiBody({
     required: true,
     description: 'Данные для регистрации',

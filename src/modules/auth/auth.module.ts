@@ -1,15 +1,17 @@
-import { DynamicModule, Module } from '@nestjs/common';
+import { DynamicModule, Global, Module } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { AuthController } from './auth.controller';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { JwtModule, JwtService } from '@nestjs/jwt';
-import { UserModule } from 'src/user/user.module';
+import { UserModule } from 'src/modules/user/user.module';
 import { NestjsFingerprintModule } from 'nestjs-fingerprint';
+import { FINGERPRINT_PARAMS } from 'src/constant/authConst';
 
+@Global()
 @Module({
   imports: [
     NestjsFingerprintModule.forRoot({
-      params: ['headers', 'userAgent', 'ipAddress'],
+      params: FINGERPRINT_PARAMS,
       // cookieOptions: {
       //   name: 'your_cookie_name',
       //   httpOnly: true,
@@ -30,5 +32,6 @@ import { NestjsFingerprintModule } from 'nestjs-fingerprint';
   ],
   controllers: [AuthController],
   providers: [AuthService, JwtService, ConfigService],
+  exports: [AuthService],
 })
 export class AuthModule {}

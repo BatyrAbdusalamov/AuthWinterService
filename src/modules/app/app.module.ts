@@ -1,8 +1,8 @@
 import { Module, ValidationPipe } from '@nestjs/common';
-import { AuthModule } from './auth/auth.module';
-import { RoleModule } from './role/role.module';
-import { UserModule } from './user/user.module';
-import { Users } from '../models/users';
+import { AuthModule } from '../auth/auth.module';
+import { RoleModule } from '../role/role.module';
+import { UserModule } from '../user/user.module';
+import { Users } from '../../../models/users';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { SequelizeModule } from '@nestjs/sequelize';
 import { APP_PIPE } from '@nestjs/core';

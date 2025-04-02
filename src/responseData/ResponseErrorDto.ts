@@ -2,6 +2,7 @@ import { ApiProperty } from '@nestjs/swagger';
 import { IsNotEmpty, IsNumber, IsString } from 'class-validator';
 import { ErrorStatus } from 'src/types/errorStatus';
 import { Response } from 'express';
+import { HttpException } from '@nestjs/common';
 
 export class ResponseErrorDto {
   constructor(status: number, description?: string) {
@@ -31,7 +32,7 @@ export function getErrorResponse(
   statusCode = 400,
 ) {
   if (
-    error instanceof Error &&
+    error instanceof HttpException &&
     typeof error.message === 'string' &&
     error.message
   ) {

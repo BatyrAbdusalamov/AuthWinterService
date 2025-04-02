@@ -1,3 +1,4 @@
+import { HttpException } from '@nestjs/common';
 import { ApiProperty } from '@nestjs/swagger';
 import {
   IsArray,
@@ -16,15 +17,16 @@ const NAME_REGEXP = /^[a-zA-Zа-я ]+$/;
 
 function ValidateCreatingRoleDto({ name, tags }: CreatingRoleData) {
   if (name && tags) {
-    if (!NAME_REGEXP.test(name)) throw new Error('Недопустимое название Роли');
+    if (!NAME_REGEXP.test(name))
+      throw new HttpException('Недопустимое название Роли', 400);
     const errTags: string[] = [];
     tags.map((tag) => {
       if (!NAME_REGEXP.test(tag) || !tag) errTags.push(tag);
     });
     if (!errTags.length)
-      throw new Error(`Недопустимые теги: ${errTags.join(', ')}`);
+      throw new HttpException(`Недопустимые теги: ${errTags.join(', ')}`, 400);
   } else {
-    throw new Error('Название Роли и Тэги не должны быть пустыми');
+    throw new HttpException('Название Роли и Тэги не должны быть пустыми', 400);
   }
   return false;
 }

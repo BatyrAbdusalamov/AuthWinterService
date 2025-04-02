@@ -1,3 +1,4 @@
+import { HttpException } from '@nestjs/common';
 import { ApiProperty } from '@nestjs/swagger';
 import { v5 as uuidv5 } from 'uuid';
 
@@ -32,18 +33,20 @@ function ValidateCreatingUserDto({
   photo,
 }: CreatingUserData) {
   if (login && first_name && last_name && email && phone && password) {
-    if (login.length < 4) throw new Error('Логин меньше 4 символов');
+    if (login.length < 4)
+      throw new HttpException('Логин меньше 4 символов', 400);
     if (!EMAIL_REGEXP.test(email))
-      throw new Error('Email является не допустимым');
+      throw new HttpException('Email является не допустимым', 400);
     if (!(PHONE_REGEXP.test(phone) && phone.length > 7))
-      throw new Error('Номер телефона является не допустимым');
+      throw new HttpException('Номер телефона является не допустимым', 400);
     if (!NAME_REGEXP.test(first_name) && !NAME_REGEXP.test(last_name))
-      throw new Error('Имя или Фамилия являются не допустимыми');
-    if (password.length < 7) throw new Error('Пароль меньше 7 символов');
+      throw new HttpException('Имя или Фамилия являются не допустимыми', 400);
+    if (password.length < 7)
+      throw new HttpException('Пароль меньше 7 символов', 400);
     if (photo && URL_REGEXP.test(photo))
-      throw new Error('Не корректный формат Фото');
+      throw new HttpException('Не корректный формат Фото', 400);
   } else {
-    throw new Error('Не все поля заполнены');
+    throw new HttpException('Не все поля заполнены', 400);
   }
   return false;
 }

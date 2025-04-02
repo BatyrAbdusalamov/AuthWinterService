@@ -1,5 +1,19 @@
-import { Body, Controller, Get, Param, Post, Res } from '@nestjs/common';
-import { ApiBody, ApiParam, ApiResponse, ApiTags } from '@nestjs/swagger';
+import {
+  Body,
+  Controller,
+  Get,
+  Param,
+  Post,
+  Res,
+  UseGuards,
+} from '@nestjs/common';
+import {
+  ApiBody,
+  ApiCookieAuth,
+  ApiParam,
+  ApiResponse,
+  ApiTags,
+} from '@nestjs/swagger';
 import {
   getErrorResponse,
   ResponseErrorDto,
@@ -7,13 +21,16 @@ import {
 import { RoleService } from './role.service';
 import { RoleDto } from 'src/responseData/RoleDto';
 import { Response } from 'express';
+import { AuthGuard } from 'src/guard/auth.guard';
 
 @Controller('role')
 @ApiTags('Role')
 export class RoleController {
   constructor(private roleService: RoleService) {}
 
+  @UseGuards(AuthGuard)
   @Get('info/:id')
+  @ApiCookieAuth('access-token')
   @ApiParam({
     name: 'id',
     required: true,
@@ -61,7 +78,9 @@ export class RoleController {
     }
   }
 
+  @UseGuards(AuthGuard)
   @Post('create')
+  @ApiCookieAuth('access-token')
   @ApiBody({
     required: true,
     description: 'Данные для создания роли',

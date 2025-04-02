@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { HttpException, Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/sequelize';
 import { Roles as RoleModel } from 'models/roles';
 import { RoleDto } from 'src/responseData/RoleDto';
@@ -31,7 +31,7 @@ export class RoleService {
         where: { ...searchRoleDataParams },
       });
     } else {
-      throw new Error('Отсутствую данные для поиска');
+      throw new HttpException('Отсутствую данные для поиска', 400);
     }
   }
   async getAllInfoRoles() {
@@ -41,7 +41,9 @@ export class RoleService {
     const isRole = await this.roleRepository.findOne({
       where: { name: roleData.name },
     });
-    if (isRole) throw new Error('Роль с таким именем уже существует');
+    if (isRole) {
+      throw new HttpException('Роль с таким именем уже существует', 400);
+    }
     return await this.roleRepository.create(new RoleDto(roleData));
   }
 }
