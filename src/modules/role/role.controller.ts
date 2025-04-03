@@ -12,7 +12,6 @@ import {
   ApiCookieAuth,
   ApiParam,
   ApiResponse,
-  ApiSecurity,
   ApiTags,
 } from '@nestjs/swagger';
 import {
@@ -32,6 +31,7 @@ export class RoleController {
   constructor(private roleService: RoleService) {}
 
   @UseGuards(AuthGuard)
+  @Roles('1')
   @Get('info/:id')
   @ApiCookieAuth('access-token')
   @ApiParam({
@@ -53,6 +53,16 @@ export class RoleController {
   @ApiResponse({
     status: 404,
     description: 'Роль не найдена',
+    type: ResponseErrorDto,
+  })
+  @ApiResponse({
+    status: 401,
+    description: 'Cессия истекла',
+    type: ResponseErrorDto,
+  })
+  @ApiResponse({
+    status: 403,
+    description: 'Отсутствуют права доступа',
     type: ResponseErrorDto,
   })
   @ApiResponse({
@@ -82,7 +92,7 @@ export class RoleController {
   }
 
   @UseGuards(AuthGuard, RoleGuard)
-  @Roles('0', '2')
+  @Roles('2')
   @Post('create')
   @ApiCookieAuth('access-token')
   @ApiBody({
@@ -98,6 +108,16 @@ export class RoleController {
   @ApiResponse({
     status: 400,
     description: 'Не корректые данные или Роль уже существует',
+    type: ResponseErrorDto,
+  })
+  @ApiResponse({
+    status: 401,
+    description: 'Cессия истекла',
+    type: ResponseErrorDto,
+  })
+  @ApiResponse({
+    status: 403,
+    description: 'Отсутствуют права доступа',
     type: ResponseErrorDto,
   })
   @ApiResponse({

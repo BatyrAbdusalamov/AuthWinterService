@@ -2,22 +2,22 @@
   "development": {
     "username": "dunc",
     "password": "dunc",
-    "database": "auth_service_db",
+    "database": "auth_service_dev_db",
     "host": "127.0.0.1",
     "dialect": "postgres"
   },
   "test": {
     "username": "postgres",
     "password": "postgres",
-    "database": "auth_db_test",
+    "database": "auth_service_test_db",
     "host": "127.0.0.1",
     "dialect": "postgres"
   },
   "production": {
     "username": "postgres",
     "password": "postgres",
-    "database": "auth_db_prod",
-    "host": "127.0.0.1",
+    "database": "auth_service_db",
+    "host": "database",
     "dialect": "postgres"
   }
 }

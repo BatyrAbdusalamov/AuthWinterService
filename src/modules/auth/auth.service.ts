@@ -71,14 +71,9 @@ export class AuthService {
   //Проверка права доступа по роли
   async parseAccessToken(token: string, roleGuard: string[]): Promise<any> {
     const tokenPayload: JwtPayLoad = await this.jwtService.decode(token);
-    if (!tokenPayload.guid) return false;
-    const userData = await this.userService.getUserInfoInGuid(
-      tokenPayload.guid,
-      ['role'],
-    );
     if (
-      userData?.role &&
-      roleGuard.some((role) => role === String(userData.role))
+      tokenPayload?.role &&
+      roleGuard.some((role) => role === String(tokenPayload.role))
     ) {
       return true;
     } else {

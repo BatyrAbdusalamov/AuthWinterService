@@ -23,6 +23,7 @@ import {
 } from 'src/responseData/ResponseErrorDto';
 import { Response } from 'express';
 import { AuthGuard } from 'src/guard/auth.guard';
+import { Roles } from 'src/utils/Roles.decorator';
 
 interface CreatingUserData extends UserDto {
   login: string;
@@ -49,6 +50,7 @@ export class UserController {
   constructor(private readonly userService: UserService) {}
 
   @UseGuards(AuthGuard)
+  @Roles('2')
   @Get('info/:guid')
   @ApiCookieAuth('access-token')
   @ApiParam({
@@ -65,6 +67,16 @@ export class UserController {
   @ApiResponse({
     status: 400,
     description: 'Не корректые данные для поиска',
+    type: ResponseErrorDto,
+  })
+  @ApiResponse({
+    status: 401,
+    description: 'Cессия истекла',
+    type: ResponseErrorDto,
+  })
+  @ApiResponse({
+    status: 403,
+    description: 'Отсутствуют права доступа',
     type: ResponseErrorDto,
   })
   @ApiResponse({
@@ -101,6 +113,7 @@ export class UserController {
   }
 
   @UseGuards(AuthGuard)
+  @Roles('2')
   @Patch('info')
   @ApiCookieAuth('access-token')
   @ApiBody({
@@ -121,6 +134,16 @@ export class UserController {
   @ApiResponse({
     status: 404,
     description: 'Пользователь не найден',
+    type: ResponseErrorDto,
+  })
+  @ApiResponse({
+    status: 401,
+    description: 'Cессия истекла',
+    type: ResponseErrorDto,
+  })
+  @ApiResponse({
+    status: 403,
+    description: 'Отсутствуют права доступа',
     type: ResponseErrorDto,
   })
   @ApiResponse({
@@ -147,6 +170,7 @@ export class UserController {
   }
 
   @UseGuards(AuthGuard)
+  @Roles('1')
   @Post('create')
   @ApiCookieAuth('access-token')
   @ApiBody({
@@ -163,6 +187,16 @@ export class UserController {
     status: 400,
     description:
       'Не корректые данные для регистрации или Пользователь уже существует',
+    type: ResponseErrorDto,
+  })
+  @ApiResponse({
+    status: 401,
+    description: 'Cессия истекла',
+    type: ResponseErrorDto,
+  })
+  @ApiResponse({
+    status: 403,
+    description: 'Отсутствуют права доступа',
     type: ResponseErrorDto,
   })
   @ApiResponse({
