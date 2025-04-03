@@ -12,6 +12,7 @@ import {
   ApiCookieAuth,
   ApiParam,
   ApiResponse,
+  ApiSecurity,
   ApiTags,
 } from '@nestjs/swagger';
 import {
@@ -22,6 +23,8 @@ import { RoleService } from './role.service';
 import { RoleDto } from 'src/responseData/RoleDto';
 import { Response } from 'express';
 import { AuthGuard } from 'src/guard/auth.guard';
+import { RoleGuard } from 'src/guard/roles.guard';
+import { Roles } from 'src/utils/Roles.decorator';
 
 @Controller('role')
 @ApiTags('Role')
@@ -78,7 +81,8 @@ export class RoleController {
     }
   }
 
-  @UseGuards(AuthGuard)
+  @UseGuards(AuthGuard, RoleGuard)
+  @Roles('0', '2')
   @Post('create')
   @ApiCookieAuth('access-token')
   @ApiBody({

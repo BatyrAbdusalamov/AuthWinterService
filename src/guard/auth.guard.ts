@@ -56,7 +56,6 @@ export class AuthGuard implements CanActivate {
         request,
         FINGERPRINT_PARAMS,
       ) as IFingerprint;
-
       return this.validateAccessToken(
         Array.isArray(accessToken) ? accessToken[0] : accessToken,
         fingerprint,

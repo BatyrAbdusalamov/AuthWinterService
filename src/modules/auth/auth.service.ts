@@ -13,6 +13,7 @@ interface JwtPayLoad {
   expiriesIn: number;
   login?: string;
   email?: string;
+  role: string;
   fingerprint: string;
 }
 
@@ -43,10 +44,9 @@ export class AuthService {
     ) {
       throw new Error('Invalid refresh-token');
     }
-
     const userData = await this.userService.getUserInfoInGuid(
       tokenPayload.guid,
-      ['password'],
+      ['password', 'guid', 'role', 'login', 'email'],
     );
     if (!userData) throw new Error('User not found');
 
@@ -66,6 +66,24 @@ export class AuthService {
       refreshToken,
       tokenPayload.expiriesIn,
     );
+  }
+
+  //Проверка права доступа по роли
+  async parseAccessToken(token: string, roleGuard: string[]): Promise<any> {
+    const tokenPayload: JwtPayLoad = await this.jwtService.decode(token);
+    if (!tokenPayload.guid) return false;
+    const userData = await this.userService.getUserInfoInGuid(
+      tokenPayload.guid,
+      ['role'],
+    );
+    if (
+      userData?.role &&
+      roleGuard.some((role) => role === String(userData.role))
+    ) {
+      return true;
+    } else {
+      return false;
+    }
   }
 
   //Проверка валидности access токена
@@ -104,6 +122,7 @@ export class AuthService {
         case 'access-token':
           return {
             guid: userData.guid,
+            role: String(userData.role),
             dateStart: Date.now(),
             expiriesIn: Date.now() + maxAgeAccessSec * 1000,
             login: userData.login,
@@ -113,6 +132,7 @@ export class AuthService {
         case 'refresh-token':
           return {
             guid: userData.guid,
+            role: String(userData.role),
             dateStart: Date.now(),
             expiriesIn: prevExpiriesIn ?? Date.now() + maxAgeRefreshSec * 1000,
             fingerprint,
