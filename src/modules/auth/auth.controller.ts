@@ -1,4 +1,12 @@
-import { Body, Controller, Get, Post, Req, Res } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Get,
+  Post,
+  Req,
+  Res,
+  UseGuards,
+} from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { ApiBody, ApiCookieAuth, ApiResponse, ApiTags } from '@nestjs/swagger';
 import {
@@ -16,6 +24,7 @@ import {
 import { UserDto, UserResponseDto } from 'src/responseData/UserDto';
 import { AuthLoginDto, AuthRegDto } from 'src/requestData/AuthDto';
 import { Fingerprint, IFingerprint } from 'nestjs-fingerprint';
+import { AuthGuard } from 'src/guard/auth.guard';
 
 interface CreatingUserData extends UserDto {
   login: string;
@@ -169,5 +178,12 @@ export class AuthController {
     } catch (error: unknown) {
       return getErrorResponse(error, res);
     }
+  }
+
+  @UseGuards(AuthGuard)
+  @Get('verify')
+  verify(@Res({ passthrough: true }) res: Response) {
+    res.statusCode = 201;
+    return true;
   }
 }
