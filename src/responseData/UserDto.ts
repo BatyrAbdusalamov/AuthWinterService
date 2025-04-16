@@ -1,6 +1,7 @@
 import { HttpException } from '@nestjs/common';
 import { ApiProperty } from '@nestjs/swagger';
 import { v5 as uuidv5 } from 'uuid';
+import { RoleDto } from './RoleDto';
 
 interface CreatingUserData {
   login: string;
@@ -10,6 +11,19 @@ interface CreatingUserData {
   phone: string;
   password: string;
   photo?: string;
+}
+
+interface ResponseUserData {
+  guid: string;
+  login: string;
+  first_name: string;
+  last_name: string;
+  email: string;
+  phone: string;
+  photo?: string;
+  role: string;
+  tags: string[];
+  updated_password?: string;
 }
 
 const DEFAULT_USER_ICON_PHOTO =
@@ -145,7 +159,7 @@ export class UserDto {
 }
 
 export class UserResponseDto {
-  constructor(userData: UserDto) {
+  constructor(userData: ResponseUserData) {
     this.email = userData.email;
     this.login = userData.login;
     this.phone = userData.phone;
@@ -154,6 +168,7 @@ export class UserResponseDto {
     this.photo = userData.photo ?? DEFAULT_USER_ICON_PHOTO;
     this.guid = userData.guid;
     this.role = userData.role;
+    this.tags = userData.tags;
     this.updated_password = userData.updated_password;
   }
 
@@ -201,14 +216,6 @@ export class UserResponseDto {
   phone: string;
 
   @ApiProperty({
-    description: 'Пароль пользователя (минимум 7 символов)',
-    example: 'password123',
-    type: 'string',
-    minLength: 7,
-  })
-  password: string;
-
-  @ApiProperty({
     description: 'URL фотографии пользователя',
     example: 'https://example.com/photos/user.jpg',
     type: 'string',
@@ -217,11 +224,18 @@ export class UserResponseDto {
   photo?: string;
 
   @ApiProperty({
-    description: 'Id роли',
-    example: '1',
-    type: 'number',
+    description: 'Роль',
+    example: 'SupeUser',
+    type: 'string',
   })
-  role: number;
+  role: string;
+
+  @ApiProperty({
+    description: 'Теги роли',
+    example: `["SuperUser", "SuperPuperUser, "ВластелинТегов"]`,
+    type: RoleDto,
+  })
+  tags: string[];
 
   @ApiProperty({
     description: 'Дата последнего обновления пароля',

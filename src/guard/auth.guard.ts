@@ -31,10 +31,10 @@ export class AuthGuard implements CanActivate {
       return this.setResponseSessionHasExpired(res);
     }
 
-    const isValidToken = await this.authService.validAccessToken(
+    const isValidToken = (await this.authService.validAccessToken(
       token,
       fingerprint,
-    );
+    )) as boolean;
 
     if (!isValidToken) {
       return this.setResponseSessionHasExpired(res);

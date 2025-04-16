@@ -25,6 +25,7 @@ import { UserDto, UserResponseDto } from 'src/responseData/UserDto';
 import { AuthLoginDto, AuthRegDto } from 'src/requestData/AuthDto';
 import { Fingerprint, IFingerprint } from 'nestjs-fingerprint';
 import { AuthGuard } from 'src/guard/auth.guard';
+import { RoleService } from '../role/role.service';
 
 interface CreatingUserData extends UserDto {
   login: string;
@@ -44,7 +45,10 @@ interface JwtTokens {
 @Controller('auth')
 @ApiTags('Auth')
 export class AuthController {
-  constructor(private readonly authService: AuthService) {}
+  constructor(
+    private readonly authService: AuthService,
+    private readonly roleService: RoleService,
+  ) {}
 
   private setResponseTokens(
     res: Response,
@@ -78,6 +82,11 @@ export class AuthController {
     type: ResponseErrorDto,
   })
   @ApiResponse({
+    status: 400,
+    description: 'Пользователь не найден',
+    type: ResponseErrorDto,
+  })
+  @ApiResponse({
     status: 500,
     description: 'Внутренняя ошибка сервиса',
     type: ResponseErrorDto,
@@ -94,7 +103,11 @@ export class AuthController {
         Array.isArray(refreshToken) ? refreshToken[0] : refreshToken,
         Array.isArray(fingerprint) ? fingerprint[0] : fingerprint,
       );
-      this.setResponseTokens(res, jwtTokens, new Date(cookies?.Expires));
+      this.setResponseTokens(
+        res,
+        jwtTokens,
+        cookies?.Expires ? new Date(cookies?.Expires) : undefined,
+      );
       res.statusCode = 201;
       return null;
     } catch (error) {
@@ -136,7 +149,12 @@ export class AuthController {
       );
       this.setResponseTokens(res, jwtTokens);
       res.statusCode = 200;
-      return user;
+      const userRole = await this.roleService.getRoleInfoInId(user.role);
+      return new UserResponseDto({
+        ...(JSON.parse(JSON.stringify(user)) as UserDto),
+        role: userRole?.name ?? 'неизвестно',
+        tags: userRole?.tags ?? [],
+      });
     } catch (error: unknown) {
       return getErrorResponse(error, res);
     }
@@ -174,16 +192,90 @@ export class AuthController {
         Array.isArray(fingerprint) ? fingerprint[0] : fingerprint,
       );
       this.setResponseTokens(res, jwtTokens);
-      return userData;
+      const userRole = await this.roleService.getRoleInfoInId(userData.role);
+      return new UserResponseDto({
+        ...(JSON.parse(JSON.stringify(userData)) as UserDto),
+        role: userRole?.name ?? 'неизвестно',
+        tags: userRole?.tags ?? [],
+      });
     } catch (error: unknown) {
       return getErrorResponse(error, res);
     }
   }
 
+  @ApiResponse({
+    status: 200,
+    description: 'Данные о авторизованом пользователе',
+    type: UserResponseDto,
+  })
+  @ApiResponse({
+    status: 401,
+    description: 'Токен устарел или отсутствует',
+    type: ResponseErrorDto,
+  })
   @UseGuards(AuthGuard)
   @Get('verify')
-  verify(@Res({ passthrough: true }) res: Response) {
-    res.statusCode = 201;
+  async verify(
+    @Res({ passthrough: true }) res: Response,
+    @Req() { cookies }: Request,
+    @Fingerprint() { id: fingerprint }: IFingerprint,
+  ) {
+    try {
+      const accessToken = cookies?.[REQ_RES_COOKIE.ACCESS] as string | string[];
+      const userData = (await this.authService.validAccessToken(
+        Array.isArray(accessToken) ? accessToken[0] : accessToken,
+        fingerprint,
+        true,
+      )) as UserDto;
+      res.statusCode = 201;
+      const userRole = await this.roleService.getRoleInfoInId(userData.role);
+      return new UserResponseDto({
+        ...(JSON.parse(JSON.stringify(userData)) as UserDto),
+        role: userRole?.name ?? 'неизвестно',
+        tags: userRole?.tags ?? [],
+      });
+    } catch (error: unknown) {
+      return getErrorResponse(error, res);
+    }
+  }
+
+  @ApiResponse({
+    status: 200,
+    description: 'Доступ разрешен',
+  })
+  @ApiResponse({
+    status: 401,
+    description: 'Токен устарел или отсутствует',
+    type: ResponseErrorDto,
+  })
+  @UseGuards(AuthGuard)
+  @Get('validate')
+  validate() {
     return true;
+  }
+
+  @Get('logout')
+  @ApiResponse({
+    status: 200,
+    description: 'Пользователь разлогинен',
+    type: undefined,
+  })
+  @ApiResponse({
+    status: 500,
+    description: 'Внутренняя ошибка сервиса',
+    type: ResponseErrorDto,
+  })
+  logout(@Res({ passthrough: true }) res: Response): ResponseErrorDto | null {
+    try {
+      res.cookie(REQ_RES_COOKIE.REFRESH, '', {
+        expires: new Date(1),
+      });
+      res.cookie(REQ_RES_COOKIE.ACCESS, '', {
+        expires: new Date(1),
+      });
+      return null;
+    } catch (error: unknown) {
+      return getErrorResponse(error, res);
+    }
   }
 }

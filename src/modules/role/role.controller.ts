@@ -22,16 +22,16 @@ import { RoleService } from './role.service';
 import { RoleDto } from 'src/responseData/RoleDto';
 import { Response } from 'express';
 import { AuthGuard } from 'src/guard/auth.guard';
-import { RoleGuard } from 'src/guard/roles.guard';
-import { Roles } from 'src/utils/Roles.decorator';
+import { TagsGuard } from 'src/guard/tags.guard';
+import { Tags } from 'src/utils/Tags.decorator';
 
 @Controller('role')
 @ApiTags('Role')
 export class RoleController {
   constructor(private roleService: RoleService) {}
 
-  @UseGuards(AuthGuard)
-  @Roles('1')
+  @UseGuards(AuthGuard, TagsGuard)
+  @Tags('Admin')
   @Get('info/:id')
   @ApiCookieAuth('access-token')
   @ApiParam({
@@ -91,8 +91,8 @@ export class RoleController {
     }
   }
 
-  @UseGuards(AuthGuard, RoleGuard)
-  @Roles('2')
+  @UseGuards(AuthGuard, TagsGuard)
+  @Tags('Admin')
   @Post('create')
   @ApiCookieAuth('access-token')
   @ApiBody({

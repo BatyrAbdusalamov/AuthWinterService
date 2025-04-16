@@ -9,15 +9,11 @@ export const REQ_RES_COOKIE = {
 };
 
 export const REFRESH_TOKEN_OPTIONS: CookieOptions = {
-  path: '/auth',
-  secure: true,
-  domain: '.localhost',
-  sameSite: 'none',
+  path: '/api/auth',
+  httpOnly: true,
 };
 
 export const ACCESS_TOKEN_OPTIONS: CookieOptions = {
   path: '/',
-  secure: true,
-  domain: '.localhost',
-  sameSite: 'none',
+  httpOnly: true,
 };

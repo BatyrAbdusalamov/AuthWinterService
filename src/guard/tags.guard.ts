@@ -14,16 +14,16 @@ import { AuthService } from 'src/modules/auth/auth.service';
 import { ResponseErrorDto } from 'src/responseData/ResponseErrorDto';
 
 @Injectable()
-export class RoleGuard implements CanActivate {
+export class TagsGuard implements CanActivate {
   constructor(
     @Inject(AuthService) private readonly authService: AuthService,
     private reflector: Reflector,
   ) {}
 
-  async permissionUserRole(token: string, context: ExecutionContext) {
+  async permissionUserTag(token: string, context: ExecutionContext) {
     const isPermission = (await this.authService.parseAccessToken(
       token,
-      this.reflector.get<string[]>('roles', context.getHandler()),
+      this.reflector.get<string[]>('tags', context.getHandler()),
     )) as boolean;
     if (isPermission) {
       return true;
@@ -41,7 +41,7 @@ export class RoleGuard implements CanActivate {
         | string
         | string[];
 
-      return this.permissionUserRole(
+      return this.permissionUserTag(
         Array.isArray(accessToken) ? accessToken[0] : accessToken,
         context,
       );

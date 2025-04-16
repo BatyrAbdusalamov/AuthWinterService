@@ -16,14 +16,15 @@ import {
   ApiResponse,
   ApiTags,
 } from '@nestjs/swagger';
-import { UserDto } from '../../responseData/UserDto';
+import { UserDto, UserResponseDto } from '../../responseData/UserDto';
 import {
   getErrorResponse,
   ResponseErrorDto,
 } from 'src/responseData/ResponseErrorDto';
 import { Response } from 'express';
 import { AuthGuard } from 'src/guard/auth.guard';
-import { Roles } from 'src/utils/Roles.decorator';
+import { Tags } from 'src/utils/Tags.decorator';
+import { RoleService } from '../role/role.service';
 
 interface CreatingUserData extends UserDto {
   login: string;
@@ -47,10 +48,13 @@ interface SearchUserDataParams {
 @Controller('user')
 @ApiTags('User')
 export class UserController {
-  constructor(private readonly userService: UserService) {}
+  constructor(
+    private readonly userService: UserService,
+    private readonly roleService: RoleService,
+  ) {}
 
   @UseGuards(AuthGuard)
-  @Roles('2')
+  @Tags('User')
   @Get('info/:guid')
   @ApiCookieAuth('access-token')
   @ApiParam({
@@ -62,7 +66,7 @@ export class UserController {
   @ApiResponse({
     status: 200,
     description: 'Успешно',
-    type: UserDto,
+    type: UserResponseDto,
   })
   @ApiResponse({
     status: 400,
@@ -92,7 +96,7 @@ export class UserController {
   async getUserInfoInGuid(
     @Param('guid') guid: string,
     @Res({ passthrough: true }) res: Response,
-  ): Promise<ResponseErrorDto | UserDto> {
+  ): Promise<ResponseErrorDto | UserResponseDto> {
     if (!guid) {
       res.statusCode = 400;
       return Promise.resolve(
@@ -106,14 +110,19 @@ export class UserController {
         res.statusCode = 404;
         return new ResponseErrorDto(110, 'Пользователь не найден');
       }
-      return findUser;
+      const userRole = await this.roleService.getRoleInfoInId(findUser.role);
+      return new UserResponseDto({
+        ...(JSON.parse(JSON.stringify(findUser)) as UserDto),
+        role: userRole?.name ?? 'неизвестно',
+        tags: userRole?.tags ?? [],
+      });
     } catch (error) {
       return getErrorResponse(error, res);
     }
   }
 
   @UseGuards(AuthGuard)
-  @Roles('2')
+  @Tags('User')
   @Patch('info')
   @ApiCookieAuth('access-token')
   @ApiBody({
@@ -124,7 +133,7 @@ export class UserController {
   @ApiResponse({
     status: 200,
     description: 'Успешно',
-    type: UserDto,
+    type: UserResponseDto,
   })
   @ApiResponse({
     status: 400,
@@ -170,7 +179,7 @@ export class UserController {
   }
 
   @UseGuards(AuthGuard)
-  @Roles('1')
+  @Tags('Admin')
   @Post('create')
   @ApiCookieAuth('access-token')
   @ApiBody({

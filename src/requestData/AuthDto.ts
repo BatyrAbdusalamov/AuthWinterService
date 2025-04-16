@@ -103,8 +103,9 @@ export class AuthRegDto implements CreatingUserData {
   password: string;
 
   @ApiProperty({
-    description: 'URL фотографии пользователя',
-    example: 'https://example.com/photos/user.jpg',
+    description:
+      'Фотография формата Blob преобразованная в String, закодированная Base64',
+    example: 'http://example.com/file/test.jpg',
     type: 'string',
     required: false,
   })

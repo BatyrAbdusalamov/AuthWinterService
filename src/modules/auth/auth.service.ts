@@ -1,11 +1,12 @@
-import { Injectable } from '@nestjs/common';
+import { HttpException, Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { JwtService } from '@nestjs/jwt';
 import { maxAgeAccessSec, maxAgeRefreshSec } from 'src/constant/cookieConst';
 import { EnvConst } from 'src/constant/envConst';
 import { AuthLoginDto, AuthRegDto } from 'src/requestData/AuthDto';
-import { UserDto, UserResponseDto } from 'src/responseData/UserDto';
+import { UserDto } from 'src/responseData/UserDto';
 import { UserService } from 'src/modules/user/user.service';
+import { RoleService } from '../role/role.service';
 
 interface JwtPayLoad {
   guid: string;
@@ -13,7 +14,8 @@ interface JwtPayLoad {
   expiriesIn: number;
   login?: string;
   email?: string;
-  role: string;
+  tags: string[];
+  role?: number;
   fingerprint: string;
 }
 
@@ -26,6 +28,7 @@ interface JwtTokens {
 export class AuthService {
   constructor(
     private userService: UserService,
+    private roleService: RoleService,
     private jwtService: JwtService,
     private configService: ConfigService,
   ) {}
@@ -35,20 +38,17 @@ export class AuthService {
     fingerprint: string,
   ): Promise<JwtTokens> {
     if (!refreshToken || !fingerprint) {
-      throw new Error('Unknown refresh-token or fingerprint');
+      throw new HttpException('Unknown refresh-token or fingerprint', 401);
     }
     const tokenPayload: JwtPayLoad = await this.jwtService.decode(refreshToken);
-    if (
-      Number(tokenPayload.expiriesIn) < Date.now() ||
-      tokenPayload.fingerprint !== fingerprint
-    ) {
-      throw new Error('Invalid refresh-token');
+    if (tokenPayload.fingerprint !== fingerprint) {
+      throw new HttpException('Сессия недействительна', 401);
     }
     const userData = await this.userService.getUserInfoInGuid(
       tokenPayload.guid,
       ['password', 'guid', 'role', 'login', 'email'],
     );
-    if (!userData) throw new Error('User not found');
+    if (!userData) throw new HttpException('Пользователь не найден', 400);
 
     const validRefreshToken = await this.jwtService.signAsync(tokenPayload, {
       secret: this.configService
@@ -57,23 +57,29 @@ export class AuthService {
     });
 
     if (refreshToken !== validRefreshToken) {
-      throw new Error('Invalid refresh-token');
+      throw new HttpException('Invalid refresh-token', 401);
+    }
+    const userTags = await this.roleService.getRoleInfoInId(userData.role);
+
+    if (!userTags?.tags) {
+      throw new HttpException('Ошибка роли', 401);
     }
 
     return await this.generateTokens(
       userData,
       fingerprint,
+      userTags?.tags,
       refreshToken,
       tokenPayload.expiriesIn,
     );
   }
 
   //Проверка права доступа по роли
-  async parseAccessToken(token: string, roleGuard: string[]): Promise<any> {
+  async parseAccessToken(token: string, tagsGuard: string[]): Promise<any> {
     const tokenPayload: JwtPayLoad = await this.jwtService.decode(token);
     if (
-      tokenPayload?.role &&
-      roleGuard.some((role) => role === String(tokenPayload.role))
+      tokenPayload?.tags &&
+      tagsGuard?.some((tag) => tokenPayload.tags.includes(tag))
     ) {
       return true;
     } else {
@@ -85,7 +91,8 @@ export class AuthService {
   async validAccessToken(
     accessToken: string,
     fingerprint: string,
-  ): Promise<boolean> {
+    isVerify?: boolean,
+  ): Promise<boolean | UserDto> {
     const tokenPayload: JwtPayLoad = await this.jwtService.decode(accessToken);
     if (
       Number(tokenPayload.expiriesIn) < Date.now() ||
@@ -102,6 +109,12 @@ export class AuthService {
       return false;
     }
 
+    if (isVerify) {
+      const userData =
+        (await this.userService.getUserInfoInGuid(tokenPayload.guid)) ?? false;
+      if (!userData) throw new HttpException('Пользователь не найден', 400);
+    }
+
     return true;
   }
 
@@ -109,6 +122,7 @@ export class AuthService {
   private async generateTokens(
     userData: UserDto,
     fingerprint: string,
+    tags: string[],
     prevRefreshToken?: string,
     prevExpiriesIn?: number,
   ): Promise<JwtTokens> {
@@ -117,7 +131,7 @@ export class AuthService {
         case 'access-token':
           return {
             guid: userData.guid,
-            role: String(userData.role),
+            tags: tags,
             dateStart: Date.now(),
             expiriesIn: Date.now() + maxAgeAccessSec * 1000,
             login: userData.login,
@@ -127,7 +141,8 @@ export class AuthService {
         case 'refresh-token':
           return {
             guid: userData.guid,
-            role: String(userData.role),
+            tags: tags,
+            role: userData.role,
             dateStart: Date.now(),
             expiriesIn: prevExpiriesIn ?? Date.now() + maxAgeRefreshSec * 1000,
             fingerprint,
@@ -154,10 +169,18 @@ export class AuthService {
   //Регистрация нового пользователя
   async registryUser(authData: AuthRegDto, fingerprint: string) {
     const userData = await this.userService.createUser(authData);
-    const jwtTokens = await this.generateTokens(userData, fingerprint);
+    const userTags = await this.roleService.getRoleInfoInId(userData.role);
+    if (!userTags?.tags) {
+      throw new Error('Invalid role');
+    }
+    const jwtTokens = await this.generateTokens(
+      userData,
+      fingerprint,
+      userTags.tags,
+    );
     return {
       jwtTokens,
-      user: new UserResponseDto(userData),
+      user: userData,
     };
   }
 
@@ -167,8 +190,16 @@ export class AuthService {
     const userData = await this.userService.verifyPassword(authData.password, {
       login: authData.login,
     });
+    const userTags = await this.roleService.getRoleInfoInId(userData.role);
+    if (!userTags?.tags) {
+      throw new Error('Invalid role');
+    }
 
-    const jwtTokens = await this.generateTokens(userData, fingerprint);
-    return { jwtTokens, userData: new UserResponseDto(userData) };
+    const jwtTokens = await this.generateTokens(
+      userData,
+      fingerprint,
+      userTags.tags,
+    );
+    return { jwtTokens, userData: userData };
   }
 }

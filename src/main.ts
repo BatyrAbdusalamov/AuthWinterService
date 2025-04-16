@@ -13,8 +13,8 @@ async function bootstrap() {
   const app = await NestFactory.create(AppModule);
   const configService = app.get(ConfigService);
   app.enableCors({
-    origin: '*',
-    methods: ['GET', 'POST', 'PUT', 'PATCH', 'OPTIONS'],
+    origin: ['*'],
+    methods: ['GET', 'PUT', 'POST', 'DELETE'],
     credentials: true,
   });
   const config = new DocumentBuilder()
@@ -25,12 +25,55 @@ async function bootstrap() {
   const options: SwaggerDocumentOptions = {
     operationIdFactory: (controllerKey: string, methodKey: string) => methodKey,
   };
-  const documentFactory = () =>
-    SwaggerModule.createDocument(app, config, options);
+  const documentFactory = () => {
+    const document = SwaggerModule.createDocument(app, config, options);
+    document.paths['/file/{name.type}'] = {
+      get: {
+        tags: ['File'],
+        summary: 'Get static files',
+        responses: {
+          200: {
+            description: 'Successful response',
+            content: {
+              'text/plain': {
+                schema: {
+                  type: 'binary',
+                },
+              },
+            },
+          },
+        },
+      },
+      put: {
+        tags: ['File'],
+        summary: 'Create static file',
+        requestBody: {
+          content: {
+            'text/plain': {
+              schema: {
+                type: 'binary',
+              },
+            },
+          },
+        },
+        responses: {
+          201: {
+            description: 'Create file',
+            content: undefined,
+          },
+          204: {
+            description: 'Changed file',
+            content: undefined,
+          },
+        },
+      },
+    };
+    return document;
+  };
   SwaggerModule.setup('/swagger/api', app, documentFactory);
   app.useGlobalPipes(new ValidationPipe());
   app.use(cookieParser());
-  await app.listen(process.env.PORT ?? 3000);
+  await app.listen(4000);
   console.log('server start on: ', configService.get('PORT'));
 }
 bootstrap();

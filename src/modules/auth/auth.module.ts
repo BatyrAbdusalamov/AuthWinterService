@@ -6,6 +6,7 @@ import { JwtModule, JwtService } from '@nestjs/jwt';
 import { UserModule } from 'src/modules/user/user.module';
 import { NestjsFingerprintModule } from 'nestjs-fingerprint';
 import { FINGERPRINT_PARAMS } from 'src/constant/authConst';
+import { RoleModule } from '../role/role.module';
 
 @Global()
 @Module({
@@ -29,6 +30,7 @@ import { FINGERPRINT_PARAMS } from 'src/constant/authConst';
       }),
     }),
     UserModule,
+    RoleModule,
   ],
   controllers: [AuthController],
   providers: [AuthService, JwtService, ConfigService],

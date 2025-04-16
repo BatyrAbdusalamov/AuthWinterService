@@ -7,6 +7,7 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
 import { SequelizeModule } from '@nestjs/sequelize';
 import { APP_PIPE } from '@nestjs/core';
 import { Roles } from 'models/roles';
+import { AppController } from './app.controller';
 
 @Module({
   imports: [
@@ -28,6 +29,7 @@ import { Roles } from 'models/roles';
     UserModule,
     RoleModule,
   ],
+  controllers: [AppController],
   providers: [
     {
       provide: APP_PIPE,

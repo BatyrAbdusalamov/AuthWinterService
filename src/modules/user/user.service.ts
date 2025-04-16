@@ -41,7 +41,6 @@ export class UserService {
     if (!isPasswordMatching) {
       throw new HttpException('Пароль не действительный', 400);
     }
-
     return userData;
   }
 
