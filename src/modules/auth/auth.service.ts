@@ -93,10 +93,11 @@ export class AuthService {
     fingerprint: string,
     isVerify?: boolean,
   ): Promise<boolean | UserDto> {
+    if (!accessToken) return false;
     const tokenPayload: JwtPayLoad = await this.jwtService.decode(accessToken);
     if (
-      Number(tokenPayload.expiriesIn) < Date.now() ||
-      tokenPayload.fingerprint !== fingerprint
+      Number(tokenPayload?.expiriesIn) < Date.now() ||
+      tokenPayload?.fingerprint !== fingerprint
     ) {
       return false;
     }
@@ -112,7 +113,9 @@ export class AuthService {
     if (isVerify) {
       const userData =
         (await this.userService.getUserInfoInGuid(tokenPayload.guid)) ?? false;
-      if (!userData) throw new HttpException('Пользователь не найден', 400);
+      if (!userData || !userData?.guid)
+        throw new HttpException('Пользователь не найден', 400);
+      return userData;
     }
 
     return true;

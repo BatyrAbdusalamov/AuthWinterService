@@ -213,7 +213,6 @@ export class AuthController {
     description: 'Токен устарел или отсутствует',
     type: ResponseErrorDto,
   })
-  @UseGuards(AuthGuard)
   @Get('verify')
   async verify(
     @Res({ passthrough: true }) res: Response,
@@ -227,6 +226,13 @@ export class AuthController {
         fingerprint,
         true,
       )) as UserDto;
+      if (!userData) {
+        res.statusCode = 401;
+        return new ResponseErrorDto(
+          200,
+          'Сессия истекла. Пожалуйста войдите снова',
+        );
+      }
       res.statusCode = 201;
       const userRole = await this.roleService.getRoleInfoInId(userData.role);
       return new UserResponseDto({
@@ -249,9 +255,9 @@ export class AuthController {
     type: ResponseErrorDto,
   })
   @UseGuards(AuthGuard)
-  @Get('validate')
+  @Get()
   validate() {
-    return true;
+    return `OK`;
   }
 
   @Get('logout')

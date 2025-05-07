@@ -70,7 +70,9 @@ async function bootstrap() {
     };
     return document;
   };
-  SwaggerModule.setup('/swagger/api', app, documentFactory);
+  SwaggerModule.setup('/auth/swagger/api', app, documentFactory, {
+    jsonDocumentUrl: '/auth/swagger/api/json',
+  });
   app.useGlobalPipes(new ValidationPipe());
   app.use(cookieParser());
   await app.listen(4000);

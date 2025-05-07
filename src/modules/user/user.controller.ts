@@ -225,4 +225,72 @@ export class UserController {
       return getErrorResponse(error, res);
     }
   }
+
+  @UseGuards(AuthGuard)
+  @Tags('User')
+  @Get('info/guids')
+  @ApiCookieAuth('access-token')
+  @ApiBody({
+    required: true,
+    description: 'Уникальный идентификаторы пользователей',
+    type: Array<string>,
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'Успешно',
+    type: UserResponseDto,
+  })
+  @ApiResponse({
+    status: 400,
+    description: 'Не корректые данные для поиска',
+    type: ResponseErrorDto,
+  })
+  @ApiResponse({
+    status: 401,
+    description: 'Cессия истекла',
+    type: ResponseErrorDto,
+  })
+  @ApiResponse({
+    status: 403,
+    description: 'Отсутствуют права доступа',
+    type: ResponseErrorDto,
+  })
+  @ApiResponse({
+    status: 404,
+    description: 'Пользователи не найденв',
+    type: ResponseErrorDto,
+  })
+  @ApiResponse({
+    status: 500,
+    description: 'Внутренняя ошибка сервиса',
+    type: ResponseErrorDto,
+  })
+  async getAllUserInfoInGuid(
+    @Body() guids: string[],
+    @Res({ passthrough: true }) res: Response,
+  ): Promise<ResponseErrorDto | UserResponseDto[]> {
+    if (!Array.isArray(guids) || !guids?.length) {
+      res.statusCode = 400;
+      return Promise.resolve(
+        new ResponseErrorDto(210, 'Не корректые данные для поиска'),
+      );
+    }
+    try {
+      const findUsers = await this.userService.getAllUserInfoInGuid(guids);
+
+      if (!findUsers?.length) {
+        res.statusCode = 404;
+        return new ResponseErrorDto(110, 'Пользователи не найдены');
+      }
+      return findUsers.map(
+        (user) =>
+          new UserResponseDto({
+            ...(JSON.parse(JSON.stringify(user)) as UserDto),
+            role: undefined,
+          }),
+      );
+    } catch (error) {
+      return getErrorResponse(error, res);
+    }
+  }
 }

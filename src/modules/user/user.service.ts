@@ -120,4 +120,21 @@ export class UserService {
     );
     return userData;
   }
+
+  async getAllUserInfoInGuid(guids: string[]) {
+    return await this.userRepository.findAll({
+      where: { guid: guids },
+      attributes: [
+        'guid',
+        'login',
+        'email',
+        'first_name',
+        'last_name',
+        'phone',
+        'photo',
+        'createdAt',
+        'updatedAt',
+      ],
+    });
+  }
 }

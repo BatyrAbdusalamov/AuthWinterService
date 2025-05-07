@@ -21,8 +21,8 @@ interface ResponseUserData {
   email: string;
   phone: string;
   photo?: string;
-  role: string;
-  tags: string[];
+  role?: string;
+  tags?: string[];
   updated_password?: string;
 }
 
@@ -167,8 +167,8 @@ export class UserResponseDto {
     this.last_name = userData.last_name;
     this.photo = userData.photo ?? DEFAULT_USER_ICON_PHOTO;
     this.guid = userData.guid;
-    this.role = userData.role;
-    this.tags = userData.tags;
+    this.role = userData?.role;
+    this.tags = userData?.tags;
     this.updated_password = userData.updated_password;
   }
 
@@ -228,14 +228,14 @@ export class UserResponseDto {
     example: 'SupeUser',
     type: 'string',
   })
-  role: string;
+  role?: string;
 
   @ApiProperty({
     description: 'Теги роли',
     example: `["SuperUser", "SuperPuperUser, "ВластелинТегов"]`,
     type: RoleDto,
   })
-  tags: string[];
+  tags?: string[];
 
   @ApiProperty({
     description: 'Дата последнего обновления пароля',
