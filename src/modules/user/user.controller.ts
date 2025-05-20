@@ -37,12 +37,10 @@ interface CreatingUserData extends UserDto {
 }
 
 interface SearchUserDataParams {
-  login?: string;
-  first_name?: string;
-  last_name?: string;
-  email?: string;
-  phone?: string;
-  password?: string;
+  phone_number?: string;
+  name?: string;
+  size?: string;
+  role?: string;
 }
 
 @Controller('user')
@@ -55,12 +53,13 @@ export class UserController {
 
   @UseGuards(AuthGuard)
   @Tags('User')
-  @Get('info/:guid')
+  @Get('info/:phone')
   @ApiCookieAuth('access-token')
   @ApiParam({
-    name: 'guid',
+    name: 'phone',
     required: true,
-    description: 'Уникальный идентификатор пользователя',
+    description: 'Номер телефона клиента без "+" ',
+    example: '79289032463',
     type: String,
   })
   @ApiResponse({
@@ -94,17 +93,17 @@ export class UserController {
     type: ResponseErrorDto,
   })
   async getUserInfoInGuid(
-    @Param('guid') guid: string,
+    @Param('phone') phone: string,
     @Res({ passthrough: true }) res: Response,
   ): Promise<ResponseErrorDto | UserResponseDto> {
-    if (!guid) {
+    if (!phone) {
       res.statusCode = 400;
       return Promise.resolve(
         new ResponseErrorDto(210, 'Не корректые данные для поиска'),
       );
     }
     try {
-      const findUser = await this.userService.getUserInfoInGuid(guid);
+      const findUser = await this.userService.getUserInfoInPhone(phone);
 
       if (!findUser) {
         res.statusCode = 404;
@@ -114,7 +113,6 @@ export class UserController {
       return new UserResponseDto({
         ...(JSON.parse(JSON.stringify(findUser)) as UserDto),
         role: userRole?.name ?? 'неизвестно',
-        tags: userRole?.tags ?? [],
       });
     } catch (error) {
       return getErrorResponse(error, res);

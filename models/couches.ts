@@ -4,18 +4,18 @@ import {
   Model,
   PrimaryKey,
   AutoIncrement,
-  ForeignKey,
-  BelongsTo,
 } from 'sequelize-typescript';
-import { Roles } from './roles';
 import { UserDto } from 'src/responseData/UserDto';
 
-@Table({ tableName: 'clients', timestamps: false })
-export class Users extends Model<Users, UserDto> {
+@Table({ tableName: 'couches', timestamps: false })
+export class Coach extends Model<Coach, UserDto> {
   @PrimaryKey
   @AutoIncrement
   @Column
   id: number;
+
+  @Column({ type: 'int', allowNull: false })
+  kind_of_sport_id: number;
 
   @Column({ type: 'varchar', allowNull: false })
   name: string;
@@ -26,16 +26,18 @@ export class Users extends Model<Users, UserDto> {
   @Column({ type: 'timestamp', allowNull: false })
   date_of_birth: string;
 
-  @Column({ type: 'varchar', allowNull: false })
-  size: string;
-
-  @ForeignKey(() => Roles)
   @Column({ type: 'int', allowNull: true })
   role: number;
 
   @Column({ type: 'varchar', allowNull: true })
   password: string;
 
-  @BelongsTo(() => Roles)
-  roleDetails: Roles; // Связь с моделью Role
+  @Column({ type: 'varchar', allowNull: true })
+  gender: string;
+
+  @Column({ type: 'int', allowNull: true })
+  salary_id: number;
+
+  @Column({ type: 'varchar', allowNull: true })
+  qualify: string;
 }

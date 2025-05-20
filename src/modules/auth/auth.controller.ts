@@ -28,13 +28,10 @@ import { AuthGuard } from 'src/guard/auth.guard';
 import { RoleService } from '../role/role.service';
 
 interface CreatingUserData extends UserDto {
-  login: string;
-  first_name: string;
-  last_name: string;
-  email: string;
-  phone: string;
+  name: string;
+  phone_number: string;
+  date_of_birth: string;
   password: string;
-  photo?: string;
 }
 
 interface JwtTokens {
@@ -153,7 +150,6 @@ export class AuthController {
       return new UserResponseDto({
         ...(JSON.parse(JSON.stringify(user)) as UserDto),
         role: userRole?.name ?? 'неизвестно',
-        tags: userRole?.tags ?? [],
       });
     } catch (error: unknown) {
       return getErrorResponse(error, res);
@@ -196,7 +192,6 @@ export class AuthController {
       return new UserResponseDto({
         ...(JSON.parse(JSON.stringify(userData)) as UserDto),
         role: userRole?.name ?? 'неизвестно',
-        tags: userRole?.tags ?? [],
       });
     } catch (error: unknown) {
       return getErrorResponse(error, res);
@@ -238,7 +233,6 @@ export class AuthController {
       return new UserResponseDto({
         ...(JSON.parse(JSON.stringify(userData)) as UserDto),
         role: userRole?.name ?? 'неизвестно',
-        tags: userRole?.tags ?? [],
       });
     } catch (error: unknown) {
       return getErrorResponse(error, res);

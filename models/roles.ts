@@ -1,12 +1,22 @@
 import { DataTypes } from 'sequelize';
-import { Table, Column, Model } from 'sequelize-typescript';
+import {
+  Table,
+  Column,
+  Model,
+  AutoIncrement,
+  PrimaryKey,
+} from 'sequelize-typescript';
 import { RoleDto } from 'src/responseData/RoleDto';
 
 @Table({
   tableName: 'roles',
-  timestamps: true,
+  timestamps: false,
 })
 export class Roles extends Model<Roles, RoleDto> {
+  @PrimaryKey
+  @AutoIncrement
+  @Column
+  id: number;
   @Column({
     type: DataTypes.STRING,
     allowNull: false,

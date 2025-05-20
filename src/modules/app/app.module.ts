@@ -1,13 +1,14 @@
 import { Module, ValidationPipe } from '@nestjs/common';
 import { AuthModule } from '../auth/auth.module';
 import { RoleModule } from '../role/role.module';
-import { UserModule } from '../user/user.module';
-import { Users } from '../../../models/users';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { SequelizeModule } from '@nestjs/sequelize';
 import { APP_PIPE } from '@nestjs/core';
 import { Roles } from 'models/roles';
 import { AppController } from './app.controller';
+import { UserModule } from '../user/user.module';
+import { Users } from 'models/users';
+import { Coach } from 'models/couches';
 
 @Module({
   imports: [
@@ -21,7 +22,7 @@ import { AppController } from './app.controller';
         password: configService.get('DB_PASSWORD'),
         port: Number(configService.get('DB_PORT')),
         database: configService.get('DB_NAME'),
-        models: [Users, Roles] as any[],
+        models: [Users, Roles, Coach] as any[],
       }),
       inject: [ConfigService],
     }),

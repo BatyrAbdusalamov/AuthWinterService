@@ -5,13 +5,13 @@ import { UserDto } from 'src/responseData/UserDto';
 import * as bcrypt from 'bcrypt';
 import { Op } from 'sequelize';
 import { AuthRegDto } from 'src/requestData/AuthDto';
+import { Coach } from 'models/couches';
 
 interface SearchUserDataParams {
-  login?: string;
-  first_name?: string;
-  last_name?: string;
-  email?: string;
-  phone?: string;
+  phone_number?: string;
+  name?: string;
+  size?: string;
+  role?: string;
 }
 
 @Injectable()
@@ -19,6 +19,8 @@ export class UserService {
   constructor(
     @InjectModel(UserModel)
     private readonly userRepository: typeof UserModel,
+    @InjectModel(Coach)
+    private readonly coachRepository: typeof Coach,
   ) {}
 
   private async hashedPassword(password: string): Promise<string> {
@@ -28,9 +30,13 @@ export class UserService {
     plainTextPassword: string,
     userSearchData: SearchUserDataParams,
   ): Promise<UserDto> {
-    const userData = await this.userRepository.findOne({
+    const clientData = await this.userRepository.findOne({
       where: { ...userSearchData },
     });
+    const coachData = await this.coachRepository.findOne({
+      where: { ...userSearchData },
+    });
+    const userData = clientData?.password ? clientData : coachData;
     if (!userData?.password) {
       throw new HttpException('Пользователь не найден', 400);
     }
@@ -44,20 +50,15 @@ export class UserService {
     return userData;
   }
 
-  async getUserInfoInGuid(guid: string, attributes?: string[]) {
+  async getUserInfoInPhone(phone_number: string, attributes?: string[]) {
     return await this.userRepository.findOne({
-      where: { guid },
+      where: { phone_number },
       attributes: attributes ?? [
-        'guid',
-        'login',
-        'email',
-        'first_name',
-        'last_name',
-        'phone',
-        'photo',
+        'name',
+        'phone_number',
+        'date_of_birth',
+        'size',
         'role',
-        'createdAt',
-        'updatedAt',
       ],
     });
   }
@@ -66,18 +67,7 @@ export class UserService {
     if (Object.keys(searchUserDataParams).length) {
       return await this.userRepository.findAll({
         where: { ...searchUserDataParams },
-        attributes: [
-          'guid',
-          'login',
-          'email',
-          'first_name',
-          'last_name',
-          'phone',
-          'photo',
-          'role',
-          'createdAt',
-          'updatedAt',
-        ],
+        attributes: ['name', 'phone_number', 'date_of_birth', 'size', 'role'],
       });
     } else {
       throw new HttpException('Отсутствуют данные для поиска', 400);
@@ -90,22 +80,16 @@ export class UserService {
       where: {
         [Op.or]: [
           {
-            login: userRegData.login,
-          },
-          {
-            email: userRegData.email,
+            phone_number: userRegData.phone_number,
           },
         ],
       },
-      attributes: ['login', 'email'],
+      attributes: ['phone_number'],
     });
     if (isUser && userRegData) {
       const errParamsMessage: string[] = [];
-      if (isUser.login === userRegData.login) {
-        errParamsMessage.push('Логин');
-      }
-      if (isUser.email === userRegData.email) {
-        errParamsMessage.push('Email');
+      if (isUser.phone_number === userRegData.phone_number) {
+        errParamsMessage.push('Номер телефона');
       }
       throw new HttpException(
         errParamsMessage.length
@@ -121,20 +105,10 @@ export class UserService {
     return userData;
   }
 
-  async getAllUserInfoInGuid(guids: string[]) {
+  async getAllUserInfoInGuid(ids: string[]) {
     return await this.userRepository.findAll({
-      where: { guid: guids },
-      attributes: [
-        'guid',
-        'login',
-        'email',
-        'first_name',
-        'last_name',
-        'phone',
-        'photo',
-        'createdAt',
-        'updatedAt',
-      ],
+      where: { id: ids },
+      attributes: ['name', 'phone_number', 'date_of_birth', 'size', 'role'],
     });
   }
 }

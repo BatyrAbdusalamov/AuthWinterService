@@ -2,38 +2,35 @@ import { ApiProperty } from '@nestjs/swagger';
 import { IsNotEmpty, IsString, Matches, MinLength } from 'class-validator';
 
 interface LoginUserData {
-  login: string;
+  phone_number: string;
   password: string;
 }
 
 interface CreatingUserData {
-  login: string;
-  first_name: string;
-  last_name: string;
-  email: string;
-  phone: string;
+  name: string;
+  date_of_birth: string;
+  phone_number: string;
   password: string;
-  photo?: string;
 }
 
 export class AuthLoginDto implements LoginUserData {
-  constructor(login: string, password: string) {
-    this.login = login;
+  constructor(phone_number: string, password: string) {
+    this.phone_number = phone_number;
     this.password = password;
   }
 
   @ApiProperty({
-    description: 'Login пользователя',
-    example: 'vany221',
+    description: 'Телефон клиента',
+    example: '+79892345894',
     type: 'string',
   })
   @IsNotEmpty()
   @IsString()
   @MinLength(4)
-  login: string;
+  phone_number: string;
 
   @ApiProperty({
-    description: 'Пароль пользователя',
+    description: 'Пароль клиента',
     example: 'Asdf123456',
     type: 'string',
   })
@@ -45,54 +42,35 @@ export class AuthLoginDto implements LoginUserData {
 
 export class AuthRegDto implements CreatingUserData {
   @ApiProperty({
-    description: 'Login пользователя',
-    example: 'vany221',
-    type: 'string',
-  })
-  @IsNotEmpty()
-  @IsString()
-  @MinLength(4)
-  login: string;
-
-  @ApiProperty({
-    description: 'Имя пользователя',
-    example: 'John',
-    type: 'string',
-  })
-  @IsString()
-  @IsNotEmpty()
-  first_name: string;
-
-  @ApiProperty({
-    description: 'Фамилия пользователя',
+    description: 'ФИО клиента',
     example: 'Doe',
     type: 'string',
   })
   @IsString()
   @IsNotEmpty()
-  last_name: string;
+  name: string;
 
   @ApiProperty({
-    description: 'Email пользователя',
-    example: 'john.doe@example.com',
+    description: 'Дата рождения клиента',
+    example: '2023-10-01 14:30:00',
     type: 'string',
   })
   @IsString()
   @IsNotEmpty()
-  email: string;
+  date_of_birth: string;
 
   @ApiProperty({
-    description: 'Номер телефона пользователя в международном формате',
+    description: 'Номер телефона клиента в международном формате',
     example: '+123123123123',
     type: 'string',
   })
   @IsString()
   @IsNotEmpty()
   @Matches(/^\+[0-9]\d{1,14}$/)
-  phone: string;
+  phone_number: string;
 
   @ApiProperty({
-    description: 'Пароль пользователя (минимум 7 символов)',
+    description: 'Пароль клиента (минимум 7 символов)',
     example: 'password123',
     type: 'string',
     minLength: 7,
@@ -101,15 +79,4 @@ export class AuthRegDto implements CreatingUserData {
   @IsNotEmpty()
   @MinLength(7)
   password: string;
-
-  @ApiProperty({
-    description:
-      'Фотография формата Blob преобразованная в String, закодированная Base64',
-    example: 'http://example.com/file/test.jpg',
-    type: 'string',
-    required: false,
-  })
-  @IsString()
-  @IsNotEmpty()
-  photo?: string;
 }

@@ -9,13 +9,12 @@ import { UserService } from 'src/modules/user/user.service';
 import { RoleService } from '../role/role.service';
 
 interface JwtPayLoad {
-  guid: string;
   dateStart: number;
   expiriesIn: number;
-  login?: string;
-  email?: string;
-  tags: string[];
+  phone_number: string;
+  name?: string;
   role?: number;
+  tags?: string[];
   fingerprint: string;
 }
 
@@ -44,9 +43,9 @@ export class AuthService {
     if (tokenPayload.fingerprint !== fingerprint) {
       throw new HttpException('Сессия недействительна', 401);
     }
-    const userData = await this.userService.getUserInfoInGuid(
-      tokenPayload.guid,
-      ['password', 'guid', 'role', 'login', 'email'],
+    const userData = await this.userService.getUserInfoInPhone(
+      tokenPayload.phone_number,
+      ['password', 'phone_number', 'role', 'name'],
     );
     if (!userData) throw new HttpException('Пользователь не найден', 400);
 
@@ -79,7 +78,7 @@ export class AuthService {
     const tokenPayload: JwtPayLoad = await this.jwtService.decode(token);
     if (
       tokenPayload?.tags &&
-      tagsGuard?.some((tag) => tokenPayload.tags.includes(tag))
+      tagsGuard?.some((tag) => tokenPayload?.tags?.includes(tag))
     ) {
       return true;
     } else {
@@ -101,19 +100,20 @@ export class AuthService {
     ) {
       return false;
     }
-
     const validAccessToken = await this.jwtService.signAsync(tokenPayload, {
       secret: this.configService.get<string>(EnvConst[0]),
     });
-
+    console.log(tokenPayload);
     if (accessToken !== validAccessToken) {
       return false;
     }
 
     if (isVerify) {
       const userData =
-        (await this.userService.getUserInfoInGuid(tokenPayload.guid)) ?? false;
-      if (!userData || !userData?.guid)
+        (await this.userService.getUserInfoInPhone(
+          tokenPayload.phone_number,
+        )) ?? false;
+      if (!userData || !userData?.phone_number)
         throw new HttpException('Пользователь не найден', 400);
       return userData;
     }
@@ -133,20 +133,20 @@ export class AuthService {
       switch (token) {
         case 'access-token':
           return {
-            guid: userData.guid,
+            phone_number: userData.phone_number,
             tags: tags,
             dateStart: Date.now(),
             expiriesIn: Date.now() + maxAgeAccessSec * 1000,
-            login: userData.login,
-            email: userData.email,
+            role: userData.role,
+            name: userData.name,
             fingerprint,
           };
         case 'refresh-token':
           return {
-            guid: userData.guid,
-            tags: tags,
+            phone_number: userData.phone_number,
             role: userData.role,
             dateStart: Date.now(),
+            name: userData.name,
             expiriesIn: prevExpiriesIn ?? Date.now() + maxAgeRefreshSec * 1000,
             fingerprint,
           };
@@ -191,7 +191,7 @@ export class AuthService {
     if (!fingerprint) throw new Error('Invalid fingerprint');
 
     const userData = await this.userService.verifyPassword(authData.password, {
-      login: authData.login,
+      phone_number: authData.phone_number,
     });
     const userTags = await this.roleService.getRoleInfoInId(userData.role);
     if (!userTags?.tags) {
