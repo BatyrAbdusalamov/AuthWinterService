@@ -37,6 +37,7 @@ export class UserService {
       where: { ...userSearchData },
     });
     const userData = clientData?.password ? clientData : coachData;
+    console.log(userData);
     if (!userData?.password) {
       throw new HttpException('Пользователь не найден', 400);
     }
