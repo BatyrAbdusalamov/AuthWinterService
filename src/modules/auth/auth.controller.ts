@@ -189,10 +189,9 @@ export class AuthController {
         Array.isArray(fingerprint) ? fingerprint[0] : fingerprint,
       );
       this.setResponseTokens(res, jwtTokens);
-      const userRole = await this.roleService.getRoleInfoInId(userData.role);
       return new UserResponseDto({
         ...(JSON.parse(JSON.stringify(userData)) as UserDto),
-        role: userRole?.name ?? 'неизвестно',
+        role: String(userData.role),
       });
     } catch (error: unknown) {
       return getErrorResponse(error, res);
