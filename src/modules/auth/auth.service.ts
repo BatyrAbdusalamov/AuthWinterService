@@ -9,6 +9,7 @@ import { UserService } from 'src/modules/user/user.service';
 import { RoleService } from '../role/role.service';
 
 interface JwtPayLoad {
+  id?: string;
   dateStart: number;
   expiriesIn: number;
   phone_number: string;
@@ -123,7 +124,7 @@ export class AuthService {
 
   //Генерация новых токенов JWT
   private async generateTokens(
-    userData: UserDto,
+    userData: UserDto & { id: number },
     fingerprint: string,
     tags: string[],
     prevRefreshToken?: string,
@@ -133,6 +134,7 @@ export class AuthService {
       switch (token) {
         case 'access-token':
           return {
+            id: String(userData.id),
             phone_number: userData.phone_number,
             tags: tags,
             dateStart: Date.now(),

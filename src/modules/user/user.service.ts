@@ -29,7 +29,7 @@ export class UserService {
   async verifyPassword(
     plainTextPassword: string,
     userSearchData: SearchUserDataParams,
-  ): Promise<UserDto> {
+  ): Promise<UserDto & { id: number }> {
     const clientData = await this.userRepository.findOne({
       where: { ...userSearchData },
     });
