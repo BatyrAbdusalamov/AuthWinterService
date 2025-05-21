@@ -97,7 +97,7 @@ export class UserResponseDto {
     this.phone_number = userData.phone_number;
     this.date_of_birth = userData.date_of_birth;
     this.size = userData.size;
-    this.role = 1;
+    this.role = Number(userData?.role) || 0;
   }
 
   @ApiProperty({

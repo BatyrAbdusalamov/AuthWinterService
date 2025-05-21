@@ -9,7 +9,7 @@ CREATE TABLE public.couches (
 	date_of_birth timestamp NOT NULL,
 	"role" int4 NULL,
 	"password" varchar(400) NULL,
-	gender varchar(400) NULL,
+	"gender" varchar(400) NULL,
 	salary_id int4 NULL,
 	"qualify" varchar(400) NULL,
 	CONSTRAINT couches_pkey PRIMARY KEY (id),
