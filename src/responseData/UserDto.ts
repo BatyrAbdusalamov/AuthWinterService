@@ -44,7 +44,7 @@ export class UserDto {
     this.phone_number = userData.phone_number;
     this.date_of_birth = userData.date_of_birth;
     this.password = hashedPassword();
-    this.role = 1;
+    this.role = 2;
     this.size = '';
   }
 

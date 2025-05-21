@@ -26,6 +26,7 @@ import { AuthLoginDto, AuthRegDto } from 'src/requestData/AuthDto';
 import { Fingerprint, IFingerprint } from 'nestjs-fingerprint';
 import { AuthGuard } from 'src/guard/auth.guard';
 import { RoleService } from '../role/role.service';
+import * as bcrypt from 'bcrypt';
 
 interface CreatingUserData extends UserDto {
   name: string;
@@ -277,5 +278,10 @@ export class AuthController {
     } catch (error: unknown) {
       return getErrorResponse(error, res);
     }
+  }
+
+  @Post('check')
+  async getHashedPassword(@Body() data: { password: string }): Promise<string> {
+    return await bcrypt.hash(data.password, 10);
   }
 }
