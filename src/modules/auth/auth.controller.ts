@@ -147,10 +147,9 @@ export class AuthController {
       );
       this.setResponseTokens(res, jwtTokens);
       res.statusCode = 200;
-      const userRole = await this.roleService.getRoleInfoInId(user.role);
       return new UserResponseDto({
         ...(JSON.parse(JSON.stringify(user)) as UserDto),
-        role: userRole?.name ?? 'неизвестно',
+        role: String(user.role),
       });
     } catch (error: unknown) {
       return getErrorResponse(error, res);
@@ -229,10 +228,9 @@ export class AuthController {
         );
       }
       res.statusCode = 201;
-      const userRole = await this.roleService.getRoleInfoInId(userData.role);
       return new UserResponseDto({
         ...(JSON.parse(JSON.stringify(userData)) as UserDto),
-        role: userRole?.name ?? 'неизвестно',
+        role: String(userData.role),
       });
     } catch (error: unknown) {
       return getErrorResponse(error, res);
